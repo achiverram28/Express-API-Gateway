@@ -1,0 +1,58 @@
+http:
+  port: ${GATEWAY_PORT:-8080}
+admin:
+  port: ${ADMIN_PORT:-9876}
+  host: ${HOST:-localhost}
+apiEndpoints:
+  api:
+    host: ${HOST:-localhost}
+    paths: "/ip"
+  user1:
+    host: ${HOST:-localhost}
+    paths: ["/user1", "/user1/*"]
+  user2:
+    host: ${HOST:-localhost}
+    paths: ["/user2", "/user2/*"]
+serviceEndpoints:
+  httpbin:
+    url: "https://httpbin.org"
+  user1Service:
+    url: "http://${HOST:-localhost}:${MICRO_SERVICE_ONE_PORT}"
+  user2Service:
+    url: "http://${HOST:-localhost}:${MICRO_SERVICE_TWO_PORT}"
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  default:
+    apiEndpoints:
+      - api
+    policies:
+      # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+      - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: httpbin
+              changeOrigin: true
+  user1Pipeline:
+    apiEndpoints:
+      - user1
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: user1Service
+              changeOrigin: true
+  user2Pipeline:
+    apiEndpoints:
+      - user2
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: user2Service
+              changeOrigin: true
